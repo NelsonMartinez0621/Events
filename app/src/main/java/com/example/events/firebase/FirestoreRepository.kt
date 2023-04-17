@@ -15,12 +15,16 @@ interface FirestoreRepository {
 
 class FirestoreRepositoryImpl @Inject constructor(
     //change to di
-    private val firestore: FirebaseFirestore = Firebase.firestore
+    private val firestore: FirebaseFirestore
 ) : FirestoreRepository {
     override fun retrieveEvents() {
         firestore.collection("eventCollection")
             .get()
-            .addOnSuccessListener {  }
+            .addOnSuccessListener {
+                it.documents.forEach { doc ->
+                    doc.id
+                }
+            }
             .addOnFailureListener {  }
     }
 

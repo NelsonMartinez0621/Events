@@ -11,6 +11,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
 /*
 @Module
 @InstallIn(SingletonComponent::class)
@@ -34,6 +36,9 @@ class NetworkModule {
 
     @Provides
     fun providesFireStore(): FirebaseFirestore = Firebase.firestore
+
+    @Provides
+    fun providesFirebaseAuth():FirebaseAuth = Firebase.auth
 
 }
 
