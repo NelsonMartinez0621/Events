@@ -1,9 +1,11 @@
 package com.example.events.view
 
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,11 +15,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.events.ui.theme.EventsTheme
 import com.example.events.util.Constant.serverClient
 import com.example.events.viewmodel.LoginViewModel
@@ -43,7 +49,10 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(loginViewModel: LoginViewModel = hiltViewModel()) {
+fun LoginScreen(
+    loginViewModel: LoginViewModel = hiltViewModel(),
+    navController: NavHostController
+) {
 
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -85,7 +94,7 @@ fun LoginScreen(loginViewModel: LoginViewModel = hiltViewModel()) {
 
         Spacer(modifier = Modifier.size(10.dp))
 
-        TextField(
+        OutlinedTextField(
             value = email ,
             onValueChange = {email = it},
             label = {
@@ -105,12 +114,11 @@ fun LoginScreen(loginViewModel: LoginViewModel = hiltViewModel()) {
                 keyboardType = KeyboardType.Email
             ),
             shape = RoundedCornerShape(8.dp)
-
         )
         
         Spacer(modifier = Modifier.size(10.dp))
 
-        TextField(
+        OutlinedTextField(
             value = password,
             onValueChange = {password = it},
             label = { Text(text = "PASSWORD")},
@@ -124,7 +132,7 @@ fun LoginScreen(loginViewModel: LoginViewModel = hiltViewModel()) {
                 .padding(horizontal = 16.dp),
             singleLine = true,
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email
+                keyboardType = KeyboardType.Password
             ),
             shape = RoundedCornerShape(8.dp)
         )
@@ -175,6 +183,7 @@ fun LoginScreen(loginViewModel: LoginViewModel = hiltViewModel()) {
         Spacer(modifier = Modifier.size(10.dp))
 
         Button( onClick = {
+
         },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondary,
@@ -183,13 +192,52 @@ fun LoginScreen(loginViewModel: LoginViewModel = hiltViewModel()) {
         ) {
             Text(text = "Facebook Login")
         }
+
+        LaunchedEffect(key1 = state.value?.isSuccess) {
+            scope.launch {
+                if (state.value?.isSuccess?.isNotEmpty() == true) {
+                    val success = state.value?.isSuccess
+                    Toast.makeText(context,"$success", Toast.LENGTH_LONG).show()
+                    navController.navigate("main")
+                }
+            }
+        }
+
+        LaunchedEffect(key1 = state.value?.isError) {
+            scope.launch {
+                if (state.value?.isError?.isNotEmpty() == true) {
+                    val error = state.value?.isError
+                    Toast.makeText(context,"$error", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        LaunchedEffect(key1 = googleSignInState.success) {
+            scope.launch {
+                if (googleSignInState.success != null) {
+                    Toast.makeText(context,"Login Success", Toast.LENGTH_LONG).show()
+                    navController.navigate("main")
+                }
+            }
+        }
+
+        LaunchedEffect(key1 = googleSignInState.error) {
+            scope.launch {
+                if (googleSignInState.error?.isNotEmpty() == true) {
+                    val error = state.value?.isError
+                    Toast.makeText(context,"$error", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            if (googleSignInState.loading) {
+                CircularProgressIndicator()
+            }
+        }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LoginPreview() {
-    EventsTheme {
-        LoginScreen()
-    }
+sealed class LoginScreenActions {
+    object Home : LoginScreenActions()
 }
